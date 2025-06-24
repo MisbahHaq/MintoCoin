@@ -7,7 +7,7 @@ class Block {
         this.data = data;
         this.DataTransfer = DataTransfer;
         this.previousHash = previousHash;
-        this.Hash = this.CalculateHash();
+        this.hash = this.CalculateHash();
 
     }
     CalculateHash() {
@@ -17,6 +17,18 @@ class Block {
 
 class Blockchain {
     constructor() {
-        this.chain = [];
+        this.chain = [this.createGenesisBlock()];
+    }
+    createGenesisBlock() {
+        return new Block(0, "01/01/2025", "Genesis Block", "0")
+    }
+    getLatestBlock() {
+        return this.chain[this.chain.length - 1];
+    }
+
+    addBlock(newBlock) {
+        newBlock.previousHash = this.getLatestBlock().hash;
+        newBlock.hash = newBlock.CalculateHash();
+        this.chain.push(newBlock);
     }
 }
