@@ -36,7 +36,16 @@ class Blockchain {
         for (let i = 1; i < this.chain.length; i++) {
             const currentBlock = this.chain[i];
             const previousBlock = this.chain[i - 1];
+
+            if (currentBlock.hash !== currentBlock.CalculateHash()) {
+                return false;
+            }
+            if (currentBlock.previousHash !== previousBlock.hash) {
+                return false;
+            }
         }
+
+        return true;
     }
 }
 
@@ -44,4 +53,6 @@ let mintoCoin = new Blockchain();
 mintoCoin.addBlock(new Block(1, "20-06-2025", { amount: 4 }));
 mintoCoin.addBlock(new Block(2, "24-06-2025", { amount: 10 }));
 
-console.log(JSON.stringify(mintoCoin, null, 4));
+console.log('Is Blockchain Valid? ' + mintoCoin.isChainValid());
+
+// console.log(JSON.stringify(mintoCoin, null, 4));
