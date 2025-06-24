@@ -17,7 +17,7 @@ class Transaction {
         if (signingKey.getPublic('hex') !== this.fromAddress) {
             throw new Error('You cannot sign transactions for other wallets!');
         }
-        const hasTx = this.calculateHash();
+        const hashTx = this.calculateHash();
         const sig = signingKey.sign(hashTx, 'base64');
         this.signature = sig.toDER('hex');
     }
@@ -54,6 +54,15 @@ class Block {
 
         console.log("BLOCK MINED: " + this.hash);
     }
+
+    hasValidTransactions() {
+        for (const tx of this.transactions) {
+            if (!tx.isValid()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 class Blockchain {
@@ -82,7 +91,16 @@ class Blockchain {
         ];
     }
 
-    createTransaction(transactions) {
+    addTransaction(transactions) {
+
+        if (!transactions.fromAddress || !transactions.toAddress) {
+            throw new Error('Transactions must include from adn to addresses');
+        }
+
+        if (!transactions.isValid) {
+            throw new Error('Cannot add new transaction to chain');
+        }
+
         this.pendingTransactions.push(transactions);
     }
 
@@ -106,6 +124,10 @@ class Blockchain {
         for (let i = 1; i < this.chain.length; i++) {
             const currentBlock = this.chain[i];
             const previousBlock = this.chain[i - 1];
+
+            if (!currentBlock.hasValidTransactions()) {
+                return false;
+            }
 
             if (currentBlock.hash !== currentBlock.CalculateHash()) {
                 return false;
