@@ -18,7 +18,7 @@ class Block {
 
     }
     CalculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+        return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.transactions) + this.nonce).toString();
     }
 
     mineBlock(difficulty) {
@@ -34,7 +34,9 @@ class Block {
 class Blockchain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
-        this.difficulty = 5;
+        this.difficulty = 2;
+        this.pendingTransactions = [];
+        this.miningReward = 100;
     }
     createGenesisBlock() {
         return new Block("01/01/2025", "Genesis Block", "0")
@@ -43,10 +45,36 @@ class Blockchain {
         return this.chain[this.chain.length - 1];
     }
 
-    addBlock(newBlock) {
-        newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.mineBlock(this.difficulty);
-        this.chain.push(newBlock);
+    minePendingTransactions(miningRewardAddress) {
+        let block = new Block(Date.now(), this.pendingTransactions);
+        block.mineBlock(this.difficulty);
+
+        console.log('Block Successfully Mined!');
+        this.chain.push(block);
+
+        this.pendingTransactions = [
+            new Transaction(null, miningRewardAddress, this.miningReward)
+        ];
+    }
+
+    createTransaction(transactions) {
+        this.pendingTransactions.push(transactions);
+    }
+
+    getBalanceOfAddress(address) {
+        let balance = 0;
+        for (const block of this.chain) {
+            for (const trans of block.transactions) {
+                if (trans.fromAddress === address) {
+                    balance -= trans.amount;
+                }
+                if (trans.toAddress === address) {
+                    balance += trans.amount;
+                }
+            }
+        }
+
+        return balance;
     }
 
     isChainValid() {
@@ -69,3 +97,15 @@ class Blockchain {
 let mintoCoin = new Blockchain();
 
 
+mintoCoin.createTransaction(new Transaction('address1', 'address2', 100)); // address1 would be the public key of someones wallet
+mintoCoin.createTransaction(new Transaction('address2', 'address1', 50));
+
+console.log('\n Starting the Mining...');
+mintoCoin.minePendingTransactions("Misbah's Address");
+console.log('\nBalance of Misbah is', mintoCoin.getBalanceOfAddress("Misbah's Address"));
+
+
+console.log('\n Starting the Mining again...');
+mintoCoin.minePendingTransactions("Misbah's Address");
+
+console.log('\nBalance of Misbah is', mintoCoin.getBalanceOfAddress("Misbah's Address"));
