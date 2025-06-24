@@ -7,10 +7,16 @@ class Block {
         this.data = data;
         this.DataTransfer = DataTransfer;
         this.previousHash = previousHash;
-        this.Hash = '';
+        this.Hash = this.CalculateHash();
 
     }
     CalculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data))
+        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+    }
+}
+
+class Blockchain {
+    constructor() {
+        this.chain = [];
     }
 }
