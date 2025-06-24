@@ -8,16 +8,27 @@ class Block {
         this.DataTransfer = DataTransfer;
         this.previousHash = previousHash;
         this.hash = this.CalculateHash();
+        this.nonce = 0;
 
     }
     CalculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+    }
+
+    mineBlock(difficulty) {
+        while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
+            this.nonce++;
+            this.hash = this.CalculateHash();
+        }
+
+        console.log("Block mined: " + this.hash);
     }
 }
 
 class Blockchain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
+        this.difficulty = 2;
     }
     createGenesisBlock() {
         return new Block(0, "01/01/2025", "Genesis Block", "0")
@@ -28,7 +39,7 @@ class Blockchain {
 
     addBlock(newBlock) {
         newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.CalculateHash();
+        newBlock.mineBlock(this.difficulty);
         this.chain.push(newBlock);
     }
 
@@ -50,9 +61,10 @@ class Blockchain {
 }
 
 let mintoCoin = new Blockchain();
+
+console.log("Mining Block 1");
 mintoCoin.addBlock(new Block(1, "20-06-2025", { amount: 4 }));
+
+console.log("Mining Block 2");
 mintoCoin.addBlock(new Block(2, "24-06-2025", { amount: 10 }));
 
-console.log('Is Blockchain Valid? ' + mintoCoin.isChainValid());
-
-// console.log(JSON.stringify(mintoCoin, null, 4));
