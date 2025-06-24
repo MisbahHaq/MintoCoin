@@ -4,6 +4,10 @@ class Block {
         this.timestamp = timestamp;
         this.DataTransfer = DataTransfer;
         this.previousHash = previousHash;
+        this.Hash = '';
+
+    }
+    CalculateHash() {
 
     }
 }
