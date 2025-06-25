@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MintoCoin</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>MintoCoin Blockchain</h1>
+    <div class="container">
+      <div class="card">
+        <h2>Generate Wallet</h2>
+        <button onclick="generateKeys()">Generate</button>
+        <textarea
+          id="pubKey"
+          placeholder="Public Key"
+          rows="2"
+          readonly
+        ></textarea>
+        <textarea
+          id="privKey"
+          placeholder="Private Key"
+          rows="2"
+          readonly
+        ></textarea>
+      </div>
+
+      <div class="card">
+        <h2>Create Transaction</h2>
+        <input id="from" placeholder="Your Public Key" />
+        <input id="to" placeholder="Recipient" />
+        <input id="amount" type="number" placeholder="Amount" />
+        <input id="priv" placeholder="Private Key" />
+        <button onclick="createTransaction()">Send</button>
+      </div>
+
+      <div class="card">
+        <h2>Mine Block</h2>
+        <input id="miner" placeholder="Miner Address" />
+        <button onclick="mineBlock()">Mine</button>
+      </div>
+
+      <div class="card">
+        <h2>Check Balance</h2>
+        <input id="balanceAddr" placeholder="Wallet Address" />
+        <button onclick="checkBalance()">Check</button>
+        <p><strong>Balance:</strong> <span id="balance">0</span> MintoCoin</p>
+      </div>
+
+      <div class="card full-width">
+        <h2>Blockchain</h2>
+        <button onclick="loadChain()">Refresh</button>
+        <pre id="chain"></pre>
+      </div>
+    </div>
+
+    <script>
+      async function generateKeys() {
+        const res = await fetch("/api/generate-keys");
+        const data = await res.json();
+        document.getElementById("pubKey").value = data.publicKey;
+        document.getElementById("privKey").value = data.privateKey;
+      }
+
+      async function createTransaction() {
+        const res = await fetch("/api/transaction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: document.getElementById("from").value,
+            to: document.getElementById("to").value,
+            amount: +document.getElementById("amount").value,
+            privateKey: document.getElementById("priv").value,
+          }),
+        });
+        alert((await res.json()).error || "Transaction created.");
+      }
+
+      async function mineBlock() {
+        await fetch("/api/mine", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            minerAddress: document.getElementById("miner").value,
+          }),
+        });
+        alert("Block mined!");
+      }
+
+      async function checkBalance() {
+        const address = document.getElementById("balanceAddr").value;
+        const res = await fetch(`/api/balance/${address}`);
+        const data = await res.json();
+        document.getElementById("balance").innerText = data.balance;
+      }
+
+      async function loadChain() {
+        const res = await fetch("/api/chain");
+        const chain = await res.json();
+        document.getElementById("chain").innerText = JSON.stringify(
+          chain,
+          null,
+          2
+        );
+      }
+    </script>
+  </body>
+</html>
